@@ -74,7 +74,12 @@ class _LoginPageState extends State<LoginPage> {
                 style:
                     TextStyle(color: color == true ? Colors.green : Colors.red),
               ),
-            )
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  resetPassword(emailController.value.text);
+                },
+                child: Text("Reset Password"))
           ],
         ),
       )),
@@ -87,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
           .signInWithEmailAndPassword(email: email, password: password);
       setState(() {
         color = true;
-        message = "Login successful!";
+        message = "${user.user!.email} logged in successfully!";
       });
       return user.user;
     } on FirebaseAuthException catch (err) {
@@ -113,6 +118,21 @@ class _LoginPageState extends State<LoginPage> {
         passwordController.clear();
         color = false;
         message = err.message!;
+      });
+    }
+  }
+
+  resetPassword(String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      setState(() {
+        color = true;
+        message = "Check your email for the password reset link!";
+      });
+    } catch (err) {
+      setState(() {
+        color = false;
+        message = "There is an error with the password reset service";
       });
     }
   }
