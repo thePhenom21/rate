@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:rate/models/Comment.dart';
 import 'package:rate/models/RateUser.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -14,19 +15,21 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  List<RateUser> otherusers = [];
+  List<Comment> otherusers = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
     setState(() {
+      otherusers = [];
       FirebaseFirestore.instance
-          .collection("users")
-          .where("email", isNotEqualTo: widget.user.email)
+          .collection("comments")
+          .where("toWhom", isEqualTo: widget.user.email)
           .get()
           .then((value) => value.docs.forEach((element) {
-                otherusers.add(RateUser.fromUser(element.data()));
+                otherusers.add(Comment.fromObject(element.data()));
               }));
     });
   }
@@ -49,7 +52,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         SizedBox(
-          height: 3 * MediaQuery.of(context).size.height / 5,
+          height: MediaQuery.of(context).orientation != Orientation.landscape
+              ? 3 * MediaQuery.of(context).size.height / 5
+              : 2 * MediaQuery.of(context).size.height / 5,
           width: MediaQuery.of(context).size.width - 10,
           child: ListView.builder(
             itemCount: otherusers.length,
@@ -61,8 +66,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text(otherusers[index].email!),
-                      Text(otherusers[index].rating!.toStringAsFixed(1))
+                      Text(otherusers[index].text),
+                      Text(otherusers[index].author)
                     ],
                   ),
                 ),

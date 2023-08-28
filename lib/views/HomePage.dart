@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rate/views/OtherProfile.dart';
 import 'package:rate/views/ProfilePage.dart';
 import 'package:rate/views/SearchPage.dart';
 
@@ -21,7 +20,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     // TODO: implement initState
     super.initState();
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -32,7 +31,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           user: widget.user!,
         ),
         const SearchPage(),
-        const OtherProfile()
       ]),
       floatingActionButton: FloatingActionButton.small(
         shape: const CircleBorder(),
