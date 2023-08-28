@@ -72,7 +72,7 @@ class _SearchPageState extends State<SearchPage> {
                 onPressed: () async {
                   await FirebaseFirestore.instance.collection("comments").add({
                     "text": a.value.text,
-                    "time": a,
+                    "time": "a",
                     "toWhom": email,
                     "author": "aaaaasdsadsa"
                   });
