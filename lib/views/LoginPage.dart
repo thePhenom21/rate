@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rate/models/RateUser.dart';
 import 'package:rate/views/HomePage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,7 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   String message = "";
   bool color = true;
   User? user;
-  String? loggedUser;
+  RateUser? loggedUser;
 
   @override
   Widget build(BuildContext context) {
@@ -51,13 +52,19 @@ class _LoginPageState extends State<LoginPage> {
                               passwordController.value.text);
                           emailController.clear();
                           passwordController.clear();
+                          loggedUser = await FirebaseFirestore.instance
+                              .collection("users")
+                              .where("email", isEqualTo: user!.email)
+                              .get()
+                              .then((value) =>
+                                  RateUser.fromUser(value.docs[0].data()));
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) {
                               return HomePage(user: loggedUser!);
                             },
                           ));
                         } catch (err) {
-                          print("login error");
+                          print(err);
                         }
                       },
                       child: const Text("Login")),
@@ -98,16 +105,10 @@ class _LoginPageState extends State<LoginPage> {
     try {
       UserCredential user = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      loggedUser = await FirebaseFirestore.instance
-          .collection("users")
-          .where("email", isEqualTo: email)
-          .get()
-          .then((value) => value.docs[0]["email"]);
       setState(() {
         color = true;
         message = "${user.user!.email} logged in successfully!";
       });
-
       return user.user;
     } on FirebaseAuthException catch (err) {
       setState(() {

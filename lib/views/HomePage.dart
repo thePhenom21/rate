@@ -3,8 +3,10 @@ import 'package:rate/views/OtherProfile.dart';
 import 'package:rate/views/ProfilePage.dart';
 import 'package:rate/views/SearchPage.dart';
 
+import '../models/RateUser.dart';
+
 class HomePage extends StatefulWidget {
-  String user;
+  RateUser? user;
   HomePage({super.key, required this.user});
 
   @override
@@ -27,7 +29,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       body: TabBarView(controller: tabController, children: [
         ProfilePage(
-          user: widget.user,
+          user: widget.user!,
         ),
         const SearchPage(),
         const OtherProfile()
