@@ -9,10 +9,11 @@ import 'package:rate/models/RateUser.dart';
 import 'package:rate/providers/user_provider.dart';
 
 StateProvider otherUsersProvider = StateProvider<List>((ref) {
-  List<RateUser> otherusers = [];
+  List<Comment> otherusers = [];
+  final usr = (ref.watch(userProvider) as RateUser);
   FirebaseFirestore.instance
       .collection("comments")
-      .where("toWhom", isEqualTo: userProvider)
+      .where("toWhom", isEqualTo: usr.email)
       .get()
       .then((value) => value.docs.forEach((element) {
             otherusers.add(Comment.fromObject(element.data()));
@@ -21,8 +22,6 @@ StateProvider otherUsersProvider = StateProvider<List>((ref) {
 });
 
 class ProfilePage extends ConsumerWidget {
-  List<Comment> otherusers = [];
-
   ProfilePage({super.key});
 
   @override

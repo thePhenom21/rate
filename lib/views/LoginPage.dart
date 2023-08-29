@@ -62,11 +62,14 @@ class LoginPage extends ConsumerWidget {
                           ref
                               .read(userProvider.notifier)
                               .update((state) => loggedUser);
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) {
+                          FirebaseAuth.instance
+                              .authStateChanges()
+                              .listen((event) {
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(builder: (context) {
                               return HomePage();
-                            },
-                          ));
+                            }));
+                          });
                         } catch (err) {
                           print(err);
                         }

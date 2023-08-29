@@ -17,46 +17,49 @@ class SearchPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usr = ref.watch(usrProvider);
     return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: TextField(
-              controller: searchController,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              onChanged: (value) async {
-                List<RateUser> l =
-                    await searchUser(searchController.value.text, ref)
-                        .then((value) => value);
-                ref.read(usrProvider.notifier).update((state) => l);
-              },
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: TextField(
+                controller: searchController,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                onChanged: (value) async {
+                  List<RateUser> l =
+                      await searchUser(searchController.value.text, ref)
+                          .then((value) => value);
+                  ref.read(usrProvider.notifier).update((state) => l);
+                },
+              ),
             ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height / 3,
-            child: ListView.builder(
-                itemCount: usr.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Text(usr[index].email!),
-                          ElevatedButton(
-                              onPressed: () {
-                                addComment(usr[index].email!, ref);
-                              },
-                              child: Icon(Icons.comment)),
-                          ElevatedButton(
-                              onPressed: () {
-                                addRating(usr[index].email!);
-                              },
-                              child: Icon(Icons.star_rate))
-                        ]),
-                  );
-                }),
-          )
-        ],
+            SizedBox(
+              height: MediaQuery.of(context).size.height / 3,
+              child: ListView.builder(
+                  itemCount: usr.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(usr[index].email!),
+                            ElevatedButton(
+                                onPressed: () {
+                                  addComment(usr[index].email!, ref);
+                                },
+                                child: Icon(Icons.comment)),
+                            ElevatedButton(
+                                onPressed: () {
+                                  addRating(usr[index].email!);
+                                },
+                                child: Icon(Icons.star_rate))
+                          ]),
+                    );
+                  }),
+            )
+          ],
+        ),
       ),
     );
   }
