@@ -6,20 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/models/Comment.dart';
 import 'package:rate/models/RateUser.dart';
-import 'package:rate/providers/user_provider.dart';
-
-StateProvider otherUsersProvider = StateProvider<List>((ref) {
-  List<Comment> otherusers = [];
-  final usr = (ref.watch(userProvider) as RateUser);
-  FirebaseFirestore.instance
-      .collection("comments")
-      .where("toWhom", isEqualTo: usr.email)
-      .get()
-      .then((value) => value.docs.forEach((element) {
-            otherusers.add(Comment.fromObject(element.data()));
-          }));
-  return otherusers;
-});
+import 'package:rate/providers/providers.dart';
 
 class ProfilePage extends ConsumerWidget {
   ProfilePage({super.key});

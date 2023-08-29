@@ -3,11 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/models/RateUser.dart';
-import 'package:rate/providers/user_provider.dart';
+import 'package:rate/providers/providers.dart';
 import 'package:rate/views/HomePage.dart';
-
-StateProvider colorProvider = StateProvider<bool>((ref) => true);
-StateProvider messageProvider = StateProvider<String>((ref) => "");
 
 class LoginPage extends ConsumerWidget {
   TextEditingController emailController = TextEditingController();
