@@ -5,8 +5,7 @@ import 'package:rate/views/SearchPage.dart';
 import '../models/RateUser.dart';
 
 class HomePage extends StatefulWidget {
-  RateUser? user;
-  HomePage({super.key, required this.user});
+  HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -28,10 +27,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(),
       body: TabBarView(controller: tabController, children: [
-        ProfilePage(
-          user: widget.user!,
-        ),
-        SearchPage(thisUser: widget.user!),
+        ProfilePage(),
+        SearchPage(),
       ]),
       floatingActionButton: FloatingActionButton.small(
         shape: const CircleBorder(),

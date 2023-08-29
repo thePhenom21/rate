@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/models/RateUser.dart';
+import 'package:rate/providers/user_provider.dart';
 import 'package:rate/views/HomePage.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+StateProvider colorProvider = StateProvider<bool>((ref) => true);
+StateProvider messageProvider = StateProvider<String>((ref) => "");
 
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
+class LoginPage extends ConsumerWidget {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  String message = "";
-  bool color = true;
+
   User? user;
   RateUser? loggedUser;
 
+  LoginPage({super.key});
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final message = ref.watch(messageProvider);
+    final color = ref.watch(colorProvider);
     return Scaffold(
       body: Center(
           child: Padding(
@@ -49,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () async {
                         try {
                           user = await login(emailController.value.text,
-                              passwordController.value.text);
+                              passwordController.value.text, ref);
                           emailController.clear();
                           passwordController.clear();
                           loggedUser = await FirebaseFirestore.instance
@@ -58,9 +59,12 @@ class _LoginPageState extends State<LoginPage> {
                               .get()
                               .then((value) =>
                                   RateUser.fromUser(value.docs[0].data()));
+                          ref
+                              .read(userProvider.notifier)
+                              .update((state) => loggedUser);
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) {
-                              return HomePage(user: loggedUser!);
+                              return HomePage();
                             },
                           ));
                         } catch (err) {
@@ -72,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () async {
                         try {
                           user = await register(emailController.value.text,
-                              passwordController.value.text);
+                              passwordController.value.text, ref);
                         } on FirebaseAuthException catch (err) {
                           print(err.message);
                         }
@@ -84,15 +88,15 @@ class _LoginPageState extends State<LoginPage> {
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: Text(
-                textAlign: TextAlign.center,
                 message,
+                textAlign: TextAlign.center,
                 style:
                     TextStyle(color: color == true ? Colors.green : Colors.red),
               ),
             ),
             ElevatedButton(
                 onPressed: () {
-                  resetPassword(emailController.value.text);
+                  resetPassword(emailController.value.text, ref);
                 },
                 child: const Text("Reset Password"))
           ],
@@ -101,58 +105,57 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  login(String email, String password) async {
+  login(String email, String password, WidgetRef ref) async {
     try {
       UserCredential user = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      setState(() {
-        color = true;
-        message = "${user.user!.email} logged in successfully!";
-      });
+
+      ref.read(colorProvider.notifier).update((state) => true);
+      ref
+          .read(messageProvider.notifier)
+          .update((state) => "${user.user!.email} logged in successfully!");
+
       return user.user;
     } on FirebaseAuthException catch (err) {
-      setState(() {
-        color = false;
-        message = err.message!;
-      });
+      ref.read(colorProvider.notifier).update((state) => false);
+      ref.read(messageProvider.notifier).update((state) => err.message!);
     }
   }
 
-  register(String email, String password) async {
+  register(String email, String password, WidgetRef ref) async {
     try {
       UserCredential user = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
       await FirebaseFirestore.instance
           .collection("users")
           .add({"email": email, "commentCount": 0, "rating": 0});
-      setState(() {
-        color = true;
-        message = "User with email ${user.user!.email} created successfully";
-      });
+
+      ref.read(colorProvider.notifier).update((state) => true);
+      ref.read(messageProvider.notifier).update((state) =>
+          "User with email ${user.user!.email} created successfully");
 
       return user;
     } on FirebaseAuthException catch (err) {
-      setState(() {
-        emailController.clear();
-        passwordController.clear();
-        color = false;
-        message = err.message!;
-      });
+      emailController.clear();
+      passwordController.clear();
+
+      ref.read(colorProvider.notifier).update((state) => false);
+      ref.read(messageProvider.notifier).update((state) => err.message!);
     }
   }
 
-  resetPassword(String email) async {
+  resetPassword(String email, WidgetRef ref) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      setState(() {
-        color = true;
-        message = "Check your email for the password reset link!";
-      });
+
+      ref.read(colorProvider.notifier).update((state) => true);
+      ref
+          .read(messageProvider.notifier)
+          .update((state) => "Check your email for the password reset link!");
     } catch (err) {
-      setState(() {
-        color = false;
-        message = "There is an error with the password reset service";
-      });
+      ref.read(colorProvider.notifier).update((state) => false);
+      ref.read(messageProvider.notifier).update(
+          (state) => "There is an error with the password reset service");
     }
   }
 }

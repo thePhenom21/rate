@@ -1,23 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/models/RateUser.dart';
+import 'package:rate/providers/user_provider.dart';
 
-class SearchPage extends StatefulWidget {
-  RateUser thisUser;
-  SearchPage({super.key, required this.thisUser});
+StateProvider usrProvider = StateProvider<List<RateUser>>((ref) => []);
 
-  @override
-  State<SearchPage> createState() => _SearchPageState();
-}
-
-class _SearchPageState extends State<SearchPage> {
+class SearchPage extends ConsumerWidget {
   TextEditingController searchController = TextEditingController();
-  List<RateUser> usr = [];
   String email = "";
 
+  SearchPage({super.key});
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final usr = ref.watch(usrProvider);
     return Scaffold(
       body: Column(
         children: [
@@ -27,11 +25,10 @@ class _SearchPageState extends State<SearchPage> {
               controller: searchController,
               decoration: const InputDecoration(border: OutlineInputBorder()),
               onChanged: (value) async {
-                usr = await searchUser(searchController.value.text)
-                    .then((value) => value);
-                setState(() {
-                  usr;
-                });
+                List<RateUser> l =
+                    await searchUser(searchController.value.text, ref)
+                        .then((value) => value);
+                ref.read(usrProvider.notifier).update((state) => l);
               },
             ),
           ),
@@ -47,7 +44,7 @@ class _SearchPageState extends State<SearchPage> {
                           Text(usr[index].email!),
                           ElevatedButton(
                               onPressed: () {
-                                addComment(usr[index].email!);
+                                addComment(usr[index].email!, ref);
                               },
                               child: Icon(Icons.comment)),
                           ElevatedButton(
@@ -64,13 +61,14 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Future<List<RateUser>> searchUser(String searchText) async {
+  Future<List<RateUser>> searchUser(String searchText, WidgetRef ref) async {
     List<RateUser> liste = [];
     await FirebaseFirestore.instance
         .collection("users")
         .where("email", isGreaterThanOrEqualTo: searchText)
         .where("email", isLessThanOrEqualTo: searchText + "\uf8ff")
-        .where("email", isNotEqualTo: widget.thisUser.email)
+        .where("email",
+            isNotEqualTo: (ref.read(userProvider) as RateUser).email)
         .get()
         .then((value) => value.docs.forEach((element) {
               liste.add(RateUser.fromUser(element.data()));
@@ -78,11 +76,11 @@ class _SearchPageState extends State<SearchPage> {
     return liste;
   }
 
-  addComment(String email) async {
+  addComment(String email, WidgetRef ref) async {
     TextEditingController a = TextEditingController();
 
     showDialog(
-        context: context,
+        context: DisposableBuildContext as BuildContext,
         builder: (context) {
           return AlertDialog(actions: [
             TextField(
@@ -94,7 +92,7 @@ class _SearchPageState extends State<SearchPage> {
                     "text": a.value.text,
                     "time": DateTime.now().toString(),
                     "toWhom": email,
-                    "author": widget.thisUser.email
+                    "author": ref.read(userProvider)
                   });
                 },
                 child: Icon(Icons.send)),

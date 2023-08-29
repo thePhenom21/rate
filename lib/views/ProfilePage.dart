@@ -3,42 +3,32 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/models/Comment.dart';
 import 'package:rate/models/RateUser.dart';
+import 'package:rate/providers/user_provider.dart';
 
-class ProfilePage extends StatefulWidget {
-  RateUser user;
-  ProfilePage({super.key, required this.user});
+StateProvider otherUsersProvider = StateProvider<List>((ref) {
+  List<RateUser> otherusers = [];
+  FirebaseFirestore.instance
+      .collection("comments")
+      .where("toWhom", isEqualTo: userProvider)
+      .get()
+      .then((value) => value.docs.forEach((element) {
+            otherusers.add(Comment.fromObject(element.data()));
+          }));
+  return otherusers;
+});
 
-  @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
+class ProfilePage extends ConsumerWidget {
   List<Comment> otherusers = [];
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    setState(() {
-      otherusers = [];
-
-      FirebaseFirestore.instance
-          .collection("comments")
-          .where("toWhom", isEqualTo: widget.user.email)
-          .get()
-          .then((value) => value.docs.forEach((element) {
-                setState(() {
-                  otherusers.add(Comment.fromObject(element.data()));
-                });
-              }));
-    });
-  }
+  ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final otherusers = ref.watch(otherUsersProvider);
+    final user = ref.watch(userProvider);
     return Scaffold(
       body: Column(children: [
         SizedBox(
@@ -48,8 +38,8 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(widget.user.email!),
-                Text(widget.user.rating!.toStringAsFixed(1))
+                Text(user.email!),
+                Text(user.rating!.toStringAsFixed(1))
               ],
             ),
           ),
