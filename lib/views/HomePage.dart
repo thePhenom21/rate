@@ -1,17 +1,23 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rate/providers/providers.dart';
+import 'package:rate/views/LoginPage.dart';
 import 'package:rate/views/ProfilePage.dart';
 import 'package:rate/views/SearchPage.dart';
 
 import '../models/RateUser.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _HomePageState extends ConsumerState<HomePage>
+    with TickerProviderStateMixin {
   TabController? tabController;
   int lastPage = 0;
 
@@ -23,9 +29,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    tabController = tabController ?? TabController(length: 2, vsync: this);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+            FirebaseAuth.instance.authStateChanges().listen((event) {
+              ref
+                  .read(messageProvider.notifier)
+                  .update((state) => "Signed out!");
+              ref.read(colorProvider.notifier).update((state) => false);
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => LoginPage()));
+            });
+          },
+        ),
+      ),
       body: TabBarView(controller: tabController, children: [
         ProfilePage(),
         SearchPage(),

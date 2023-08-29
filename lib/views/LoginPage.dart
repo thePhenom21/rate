@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/models/RateUser.dart';
 import 'package:rate/providers/providers.dart';
 import 'package:rate/views/HomePage.dart';
+import 'package:flutter/services.dart';
 
 class LoginPage extends ConsumerWidget {
   TextEditingController emailController = TextEditingController();
@@ -36,6 +37,7 @@ class LoginPage extends ConsumerWidget {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 controller: passwordController,
+                obscureText: true,
               ),
             ),
             Padding(
@@ -62,14 +64,18 @@ class LoginPage extends ConsumerWidget {
                           FirebaseAuth.instance
                               .authStateChanges()
                               .listen((event) {
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (context) {
-                              return HomePage();
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (context) {
+                              return ref.watch(homePageProvider) as HomePage;
                             }));
                           });
                         } catch (err) {
                           print(err);
                         }
+                        SystemChannels.textInput.invokeMethod('TextInput.hide');
+                        ref
+                            .read(messageProvider.notifier)
+                            .update((state) => "");
                       },
                       child: const Text("Login")),
                   ElevatedButton(
@@ -80,6 +86,10 @@ class LoginPage extends ConsumerWidget {
                         } on FirebaseAuthException catch (err) {
                           print(err.message);
                         }
+                        SystemChannels.textInput.invokeMethod('TextInput.hide');
+                        ref
+                            .read(messageProvider.notifier)
+                            .update((state) => "");
                       },
                       child: const Text("Register"))
                 ],
@@ -97,6 +107,7 @@ class LoginPage extends ConsumerWidget {
             ElevatedButton(
                 onPressed: () {
                   resetPassword(emailController.value.text, ref);
+                  SystemChannels.textInput.invokeMethod('TextInput.hide');
                 },
                 child: const Text("Reset Password"))
           ],
