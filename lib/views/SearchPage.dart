@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:rate/models/RateUser.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  RateUser thisUser;
+  SearchPage({super.key, required this.thisUser});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -12,7 +13,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   TextEditingController searchController = TextEditingController();
-  RateUser usr = RateUser("", 0, 0);
+  List<RateUser> usr = [];
   String email = "";
 
   @override
@@ -25,37 +26,56 @@ class _SearchPageState extends State<SearchPage> {
             child: TextField(
               controller: searchController,
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              onSubmitted: (value) async {
-                usr = await searchUser(searchController.value.text);
+              onChanged: (value) async {
+                usr = await searchUser(searchController.value.text)
+                    .then((value) => value);
                 setState(() {
-                  email = usr.email!;
+                  usr;
                 });
               },
             ),
           ),
-          Card(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text(email),
-                  ElevatedButton(
-                      onPressed: () {
-                        addComment(email);
-                      },
-                      child: Icon(Icons.add))
-                ]),
+          SizedBox(
+            height: MediaQuery.of(context).size.height / 3,
+            child: ListView.builder(
+                itemCount: usr.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text(usr[index].email!),
+                          ElevatedButton(
+                              onPressed: () {
+                                addComment(usr[index].email!);
+                              },
+                              child: Icon(Icons.comment)),
+                          ElevatedButton(
+                              onPressed: () {
+                                addRating(usr[index].email!);
+                              },
+                              child: Icon(Icons.star_rate))
+                        ]),
+                  );
+                }),
           )
         ],
       ),
     );
   }
 
-  searchUser(String email) async {
-    return await FirebaseFirestore.instance
+  Future<List<RateUser>> searchUser(String searchText) async {
+    List<RateUser> liste = [];
+    await FirebaseFirestore.instance
         .collection("users")
-        .where("email", isEqualTo: searchController.value.text)
+        .where("email", isGreaterThanOrEqualTo: searchText)
+        .where("email", isLessThanOrEqualTo: searchText + "\uf8ff")
+        .where("email", isNotEqualTo: widget.thisUser.email)
         .get()
-        .then((value) => RateUser.fromUser(value.docs[0].data()));
+        .then((value) => value.docs.forEach((element) {
+              liste.add(RateUser.fromUser(element.data()));
+            }));
+    return liste;
   }
 
   addComment(String email) async {
@@ -72,9 +92,9 @@ class _SearchPageState extends State<SearchPage> {
                 onPressed: () async {
                   await FirebaseFirestore.instance.collection("comments").add({
                     "text": a.value.text,
-                    "time": "a",
+                    "time": DateTime.now().toString(),
                     "toWhom": email,
-                    "author": "aaaaasdsadsa"
+                    "author": widget.thisUser.email
                   });
                 },
                 child: Icon(Icons.send)),
@@ -85,5 +105,18 @@ class _SearchPageState extends State<SearchPage> {
                 child: Icon(Icons.delete))
           ]);
         });
+  }
+
+  addRating(String email) async {
+    QueryDocumentSnapshot val = await FirebaseFirestore.instance
+        .collection("users")
+        .where("email", isEqualTo: email)
+        .get()
+        .then((value) => value.docs[0]);
+    Map data = val.data() as Map;
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(val.id)
+        .update({"rating": data["rating"] + 1});
   }
 }

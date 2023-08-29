@@ -24,12 +24,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
     setState(() {
       otherusers = [];
+
       FirebaseFirestore.instance
           .collection("comments")
           .where("toWhom", isEqualTo: widget.user.email)
           .get()
           .then((value) => value.docs.forEach((element) {
-                otherusers.add(Comment.fromObject(element.data()));
+                setState(() {
+                  otherusers.add(Comment.fromObject(element.data()));
+                });
               }));
     });
   }
@@ -53,8 +56,8 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         SizedBox(
           height: MediaQuery.of(context).orientation != Orientation.landscape
-              ? 3 * MediaQuery.of(context).size.height / 5
-              : 2 * MediaQuery.of(context).size.height / 5,
+              ? 2 * MediaQuery.of(context).size.height / 5
+              : 1 * MediaQuery.of(context).size.height / 5,
           width: MediaQuery.of(context).size.width - 10,
           child: ListView.builder(
             itemCount: otherusers.length,
@@ -64,10 +67,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: MediaQuery.of(context).size.height / 5,
                 child: Card(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
                     children: [
-                      Text(otherusers[index].text),
-                      Text(otherusers[index].author)
+                      Expanded(
+                          child: Text(otherusers[index].text, maxLines: 2)),
+                      Expanded(
+                        child: Text(
+                          otherusers[index].author,
+                          maxLines: 2,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          otherusers[index].time,
+                          overflow: TextOverflow.fade,
+                        ),
+                      )
                     ],
                   ),
                 ),

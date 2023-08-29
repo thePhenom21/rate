@@ -26,11 +26,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: TabBarView(controller: tabController, children: [
         ProfilePage(
           user: widget.user!,
         ),
-        const SearchPage(),
+        SearchPage(thisUser: widget.user!),
       ]),
       floatingActionButton: FloatingActionButton.small(
         shape: const CircleBorder(),
