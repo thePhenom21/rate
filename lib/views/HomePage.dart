@@ -39,6 +39,27 @@ class _HomePageState extends ConsumerState<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+              onPressed: () {
+                if (ref.watch(themeProvider) == ThemeData.dark()) {
+                  ref
+                      .read(themeProvider.notifier)
+                      .update((state) => ThemeData.light());
+                  ref
+                      .read(themeIconProvider.notifier)
+                      .update((state) => Icon(Icons.dark_mode));
+                } else {
+                  ref
+                      .read(themeProvider.notifier)
+                      .update((state) => ThemeData.dark());
+                  ref
+                      .read(themeIconProvider.notifier)
+                      .update((state) => Icon(Icons.light_mode));
+                }
+              },
+              icon: ref.watch(themeIconProvider))
+        ],
         leading: IconButton(
           icon: Icon(Icons.logout),
           onPressed: () async {
