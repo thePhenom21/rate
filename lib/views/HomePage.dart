@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/providers/providers.dart';
 import 'package:rate/views/LoginPage.dart';
+import 'package:rate/views/OtherUser.dart';
 import 'package:rate/views/ProfilePage.dart';
 import 'package:rate/views/SearchPage.dart';
 
@@ -75,10 +76,8 @@ class _HomePageState extends ConsumerState<HomePage>
           },
         ),
       ),
-      body: TabBarView(controller: tabController, children: [
-        ProfilePage(),
-        SearchPage(),
-      ]),
+      body: TabBarView(
+          controller: tabController, children: [ProfilePage(), SearchPage()]),
       floatingActionButton: FloatingActionButton.small(
         shape: const CircleBorder(),
         onPressed: () {

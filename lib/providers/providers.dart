@@ -29,3 +29,6 @@ StateProvider<ThemeData> themeProvider =
 
 StateProvider<Icon> themeIconProvider =
     StateProvider<Icon>((ref) => Icon(Icons.light_mode));
+
+StateProvider<RateUser?> otherUserProvider =
+    StateProvider<RateUser?>((ref) => null);

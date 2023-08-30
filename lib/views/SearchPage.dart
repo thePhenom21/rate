@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rate/models/RateUser.dart';
 import 'package:rate/providers/providers.dart';
+import 'package:rate/views/OtherUser.dart';
 
 class SearchPage extends ConsumerWidget {
   TextEditingController searchController = TextEditingController();
@@ -37,22 +38,34 @@ class SearchPage extends ConsumerWidget {
               child: ListView.builder(
                   itemCount: usr.length,
                   itemBuilder: (context, index) {
-                    return Card(
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(usr[index].email!),
-                            ElevatedButton(
-                                onPressed: () {
-                                  addComment(usr[index].email!, ref);
-                                },
-                                child: Icon(Icons.comment)),
-                            ElevatedButton(
-                                onPressed: () {
-                                  addRating(usr[index].email!);
-                                },
-                                child: Icon(Icons.star_rate))
-                          ]),
+                    return GestureDetector(
+                      onTap: () {
+                        ref.read(otherUserProvider.notifier).update((state) =>
+                            RateUser(usr[index].email!, usr[index].rating!,
+                                usr[index].commentCount!));
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) {
+                            return OtherUser();
+                          },
+                        ));
+                      },
+                      child: Card(
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(usr[index].email!),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    addComment(usr[index].email!, ref);
+                                  },
+                                  child: Icon(Icons.comment)),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    addRating(usr[index].email!);
+                                  },
+                                  child: Icon(Icons.star_rate))
+                            ]),
+                      ),
                     );
                   }),
             )

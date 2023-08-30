@@ -25,7 +25,12 @@ class ProfilePage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(user.email!),
-                Text(user.rating!.toStringAsFixed(1))
+                Row(
+                  children: [
+                    Icon(Icons.star),
+                    Text(user.rating!.toStringAsFixed(1)),
+                  ],
+                )
               ],
             ),
           ),
